@@ -4,3 +4,8 @@ blogdown::install_hugo()
 blogdown::new_site(theme="nurlansu/hugo-sustain", theme_example = T)
 
 blogdown::serve_site()
+
+
+git config --global aum98 YourGithubUsername 
+git remote add origin https://github.com/aum98/website.git 
+git push origin master
