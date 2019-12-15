@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Aum Mhapankar" />
+    <meta name="description" content="Describe your website">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>Project 1: Exploratory Data Analysis</title>
+    <meta name="generator" content="Hugo 0.61.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/blog/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/project1/">Project 1: Exploratory Data Analysis</a></strong>
+          </h3>
+        </div>
+        <div class="blog-title">
+          <h4>
+          January 1, 0001
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<div id="data-wrangling-and-data-exploration" class="section level2">
+<h2>Data Wrangling and Data Exploration</h2>
+<p>I chose the datasets, Suicide and GBSG2, as they gave the suicide rates and Breast Cancer data in Germany, respectively. The variables included in the Suicide dataset include sex, age, and methods for committing suicide. The Breast Cancer dataset includes tumor size, age, survival time, and more variables. I combined them by age to see the effect of age on these various variables. I am not entirely sure whether there will be associations with age groups that have greater cancer rates and higher rates of suicide, but this association is certainly highly possible. It would be interesting to do a similar data analysis with a suicide dataset and data on the family members of those affected with cancer.</p>
+<ol start="2" style="list-style-type: decimal">
+<li>Join your 2+ separate data sources into a single dataset</li>
+</ol>
+<pre class="r"><code>data(package = .packages(all.available = TRUE))</code></pre>
+<pre><code>## Warning in data(package = .packages(all.available = TRUE)): datasets have been
+## moved from package &#39;base&#39; to package &#39;datasets&#39;</code></pre>
+<pre><code>## Warning in data(package = .packages(all.available = TRUE)): datasets have been
+## moved from package &#39;stats&#39; to package &#39;datasets&#39;</code></pre>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.2.1     ✓ purrr   0.3.3
+## ✓ tibble  2.1.3     ✓ dplyr   0.8.3
+## ✓ tidyr   1.0.0     ✓ stringr 1.4.0
+## ✓ readr   1.3.1     ✓ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ───────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(dplyr)
+library(vcd)</code></pre>
+<pre><code>## Loading required package: grid</code></pre>
+<pre class="r"><code>data(&quot;Suicide&quot;)
+library(TH.data)</code></pre>
+<pre><code>## Loading required package: survival</code></pre>
+<pre><code>## Loading required package: MASS</code></pre>
+<pre><code>## 
+## Attaching package: &#39;MASS&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     select</code></pre>
+<pre><code>## 
+## Attaching package: &#39;TH.data&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:MASS&#39;:
+## 
+##     geyser</code></pre>
+<pre class="r"><code>data(&quot;GBSG2&quot;)
+germany_age &lt;- Suicide %&gt;% inner_join(GBSG2, by=&quot;age&quot;) %&gt;% na.omit()
+head(germany_age)</code></pre>
+<pre><code>##   Freq  sex   method age age.group method2 horTh menostat tsize tgrade pnodes
+## 1  789 male   poison  25     25-35  poison    no      Pre    22     II      2
+## 2  789 male   poison  25     25-35  poison    no      Pre    29     II      3
+## 3   26 male  cookgas  25     25-35     gas    no      Pre    22     II      2
+## 4   26 male  cookgas  25     25-35     gas    no      Pre    29     II      3
+## 5  243 male toxicgas  25     25-35     gas    no      Pre    22     II      2
+## 6  243 male toxicgas  25     25-35     gas    no      Pre    29     II      3
+##   progrec estrec time cens
+## 1     250     87  861    1
+## 2       0      0  343    1
+## 3     250     87  861    1
+## 4       0      0  343    1
+## 5     250     87  861    1
+## 6       0      0  343    1</code></pre>
+<pre class="r"><code>glimpse(germany_age)</code></pre>
+<pre><code>## Observations: 2,394
+## Variables: 15
+## $ Freq      &lt;dbl&gt; 789, 789, 26, 26, 243, 243, 648, 648, 52, 52, 268, 268, 38,…
+## $ sex       &lt;fct&gt; male, male, male, male, male, male, male, male, male, male,…
+## $ method    &lt;fct&gt; poison, poison, cookgas, cookgas, toxicgas, toxicgas, hang,…
+## $ age       &lt;dbl&gt; 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25,…
+## $ age.group &lt;fct&gt; 25-35, 25-35, 25-35, 25-35, 25-35, 25-35, 25-35, 25-35, 25-…
+## $ method2   &lt;fct&gt; poison, poison, gas, gas, gas, gas, hang, hang, drown, drow…
+## $ horTh     &lt;fct&gt; no, no, no, no, no, no, no, no, no, no, no, no, no, no, no,…
+## $ menostat  &lt;fct&gt; Pre, Pre, Pre, Pre, Pre, Pre, Pre, Pre, Pre, Pre, Pre, Pre,…
+## $ tsize     &lt;int&gt; 22, 29, 22, 29, 22, 29, 22, 29, 22, 29, 22, 29, 22, 29, 22,…
+## $ tgrade    &lt;ord&gt; II, II, II, II, II, II, II, II, II, II, II, II, II, II, II,…
+## $ pnodes    &lt;int&gt; 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 11, 1…
+## $ progrec   &lt;int&gt; 250, 0, 250, 0, 250, 0, 250, 0, 250, 0, 250, 0, 250, 0, 250…
+## $ estrec    &lt;int&gt; 87, 0, 87, 0, 87, 0, 87, 0, 87, 0, 87, 0, 87, 0, 87, 0, 87,…
+## $ time      &lt;int&gt; 861, 343, 861, 343, 861, 343, 861, 343, 861, 343, 861, 343,…
+## $ cens      &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,…</code></pre>
+<p>I used the inner_join function to join the 2 datasets on the basis of Age. I also removed NAs using na.omit() and glimpsed the combined dataset: ‘germany_age’.</p>
+<ol start="3" style="list-style-type: decimal">
+<li><p>Create summary statistics</p>
+<pre class="r"><code>#dplyr functions
+combined &lt;- germany_age %&gt;% group_by(age) %&gt;% 
+  summarize(count = n(),max_tumor = max(germany_age$tsize),  min_tumor = min(germany_age$tsize)) %&gt;% filter(count &gt; 10) %&gt;%  arrange(desc(age)) 
+combined</code></pre>
+<pre><code>## # A tibble: 12 x 4
+##      age count max_tumor min_tumor
+##    &lt;dbl&gt; &lt;int&gt;     &lt;int&gt;     &lt;int&gt;
+##  1    80    36       100         7
+##  2    75    36       100         7
+##  3    70   162       100         7
+##  4    65   468       100         7
+##  5    60   414       100         7
+##  6    55   252       100         7
+##  7    50   378       100         7
+##  8    45   396       100         7
+##  9    40   144       100         7
+## 10    35    54       100         7
+## 11    30    18       100         7
+## 12    25    36       100         7</code></pre>
+<pre class="r"><code>germany_age &lt;- germany_age %&gt;% dplyr::select(-age.group, -cens) %&gt;% mutate(tratio=tsize/time) #added tratio to see ratio of tumor size to recurrence free survival time in patients
+
+#summary stats
+summary(germany_age)</code></pre>
+<pre><code>##       Freq             sex            method         age           method2   
+##  Min.   :   0.00   male  :1197   poison  :266   Min.   :25.00   gas    :532  
+##  1st Qu.:  29.25   female:1197   cookgas :266   1st Qu.:45.00   poison :266  
+##  Median :  92.00                 toxicgas:266   Median :55.00   hang   :266  
+##  Mean   : 242.18                 hang    :266   Mean   :55.08   drown  :266  
+##  3rd Qu.: 250.00                 drown   :266   3rd Qu.:65.00   gun    :266  
+##  Max.   :1381.00                 gun     :266   Max.   :80.00   knife  :266  
+##                                  (Other) :798                   (Other):532  
+##  horTh      menostat        tsize        tgrade         pnodes      
+##  no :1620   Pre : 882   Min.   :  7.00   I  : 468   Min.   : 1.000  
+##  yes: 774   Post:1512   1st Qu.: 20.00   II :1404   1st Qu.: 1.000  
+##                         Median : 25.00   III: 522   Median : 3.000  
+##                         Mean   : 29.87              Mean   : 4.684  
+##                         3rd Qu.: 35.00              3rd Qu.: 6.000  
+##                         Max.   :100.00              Max.   :38.000  
+##                                                                     
+##     progrec         estrec           time          tratio       
+##  Min.   :   0   Min.   :  0.0   Min.   :   8   Min.   :0.00516  
+##  1st Qu.:   9   1st Qu.: 11.0   1st Qu.: 554   1st Qu.:0.01664  
+##  Median :  50   Median : 36.0   Median : 964   Median :0.02938  
+##  Mean   : 120   Mean   :110.5   Mean   :1077   Mean   :0.07874  
+##  3rd Qu.: 136   3rd Qu.:151.0   3rd Qu.:1493   3rd Qu.:0.04980  
+##  Max.   :2380   Max.   :972.0   Max.   :2456   Max.   :3.62500  
+## </code></pre>
+<pre class="r"><code>germany_age %&gt;% summarize_all(mean,na.rm=T)</code></pre>
+<pre><code>## Warning in mean.default(sex, na.rm = TRUE): argument is not numeric or logical:
+## returning NA</code></pre>
+<pre><code>## Warning in mean.default(method, na.rm = TRUE): argument is not numeric or
+## logical: returning NA</code></pre>
+<pre><code>## Warning in mean.default(method2, na.rm = TRUE): argument is not numeric or
+## logical: returning NA</code></pre>
+<pre><code>## Warning in mean.default(horTh, na.rm = TRUE): argument is not numeric or
+## logical: returning NA</code></pre>
+<pre><code>## Warning in mean.default(menostat, na.rm = TRUE): argument is not numeric or
+## logical: returning NA</code></pre>
+<pre><code>## Warning in mean.default(tgrade, na.rm = TRUE): argument is not numeric or
+## logical: returning NA</code></pre>
+<pre><code>##       Freq sex method      age method2 horTh menostat    tsize tgrade   pnodes
+## 1 242.1763  NA     NA 55.07519      NA    NA       NA 29.87218     NA 4.684211
+##   progrec   estrec     time    tratio
+## 1     120 110.5188 1077.188 0.0787397</code></pre>
+<pre class="r"><code>var(germany_age)</code></pre>
+<pre><code>## Warning in var(germany_age): NAs introduced by coercion</code></pre>
+<pre><code>##                   Freq sex method          age method2 horTh menostat
+## Freq     115165.924619  NA     NA -133.9246675      NA    NA       NA
+## sex                 NA  NA     NA           NA      NA    NA       NA
+## method              NA  NA     NA           NA      NA    NA       NA
+## age        -133.924667  NA     NA  115.8322048      NA    NA       NA
+## method2             NA  NA     NA           NA      NA    NA       NA
+## horTh               NA  NA     NA           NA      NA    NA       NA
+## menostat            NA  NA     NA           NA      NA    NA       NA
+## tsize        35.160025  NA     NA   -2.9615514      NA    NA       NA
+## tgrade              NA  NA     NA           NA      NA    NA       NA
+## pnodes      -28.907537  NA     NA    6.7182792      NA    NA       NA
+## progrec   -2796.312160  NA     NA  614.5800251      NA    NA       NA
+## estrec    -1867.813177  NA     NA  608.7491085      NA    NA       NA
+## time       1437.302414  NA     NA  792.9486692      NA    NA       NA
+## tratio        1.020062  NA     NA   -0.2060333      NA    NA       NA
+##                 tsize tgrade        pnodes     progrec       estrec
+## Freq       35.1600250     NA -2.890754e+01 -2796.31216 -1867.813177
+## sex                NA     NA            NA          NA           NA
+## method             NA     NA            NA          NA           NA
+## age        -2.9615514     NA  6.718279e+00   614.58003   608.749108
+## method2            NA     NA            NA          NA           NA
+## horTh              NA     NA            NA          NA           NA
+## menostat           NA     NA            NA          NA           NA
+## tsize     260.8369775     NA  2.724169e+01  -504.57919  -348.379962
+## tgrade             NA     NA            NA          NA           NA
+## pnodes     27.2416918     NA  3.203396e+01   -82.56080  -113.334638
+## progrec  -504.5791893     NA -8.256080e+01 60378.03260 21580.172169
+## estrec   -348.3799616     NA -1.133346e+02 21580.17217 25792.767929
+## time      296.2379936     NA -8.380802e+02  9309.00878  5237.082550
+## tratio      0.1695406     NA -7.063082e-03    -3.87157    -4.266433
+##                  time        tratio
+## Freq       1437.30241   1.020062177
+## sex                NA            NA
+## method             NA            NA
+## age         792.94867  -0.206033256
+## method2            NA            NA
+## horTh              NA            NA
+## menostat           NA            NA
+## tsize       296.23799   0.169540578
+## tgrade             NA            NA
+## pnodes     -838.08019  -0.007063082
+## progrec    9309.00878  -3.871570454
+## estrec     5237.08255  -4.266433241
+## time     392317.27598 -54.968238234
+## tratio      -54.96824   0.105347255</code></pre>
+<pre class="r"><code>n_distinct(germany_age)</code></pre>
+<pre><code>## [1] 2394</code></pre>
+<pre class="r"><code>summary(germany_age$age)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   25.00   45.00   55.00   55.08   65.00   80.00</code></pre>
+<pre class="r"><code>summary(germany_age$time)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##       8     554     964    1077    1493    2456</code></pre>
+<pre class="r"><code>summary(germany_age$tsize)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##    7.00   20.00   25.00   29.87   35.00  100.00</code></pre>
+<pre class="r"><code>summary(germany_age$tratio)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+## 0.00516 0.01664 0.02938 0.07874 0.04980 3.62500</code></pre>
+<pre class="r"><code>mean(germany_age$age)</code></pre>
+<pre><code>## [1] 55.07519</code></pre>
+<pre class="r"><code>mean(germany_age$time)</code></pre>
+<pre><code>## [1] 1077.188</code></pre>
+<pre class="r"><code>mean(germany_age$tsize)</code></pre>
+<pre><code>## [1] 29.87218</code></pre>
+<pre class="r"><code>mean(germany_age$tratio)</code></pre>
+<pre><code>## [1] 0.0787397</code></pre>
+<pre class="r"><code>sd(germany_age$age)</code></pre>
+<pre><code>## [1] 10.76254</code></pre>
+<pre class="r"><code>sd(germany_age$time)</code></pre>
+<pre><code>## [1] 626.3524</code></pre>
+<pre class="r"><code>sd(germany_age$tsize)</code></pre>
+<pre><code>## [1] 16.15045</code></pre>
+<pre class="r"><code>sd(germany_age$tratio)</code></pre>
+<pre><code>## [1] 0.3245724</code></pre>
+<pre class="r"><code>var(germany_age$age)</code></pre>
+<pre><code>## [1] 115.8322</code></pre>
+<pre class="r"><code>var(germany_age$time)</code></pre>
+<pre><code>## [1] 392317.3</code></pre>
+<pre class="r"><code>var(germany_age$tsize)</code></pre>
+<pre><code>## [1] 260.837</code></pre>
+<pre class="r"><code>var(germany_age$tratio)</code></pre>
+<pre><code>## [1] 0.1053473</code></pre>
+<pre class="r"><code>min(germany_age$age)</code></pre>
+<pre><code>## [1] 25</code></pre>
+<pre class="r"><code>min(germany_age$time)</code></pre>
+<pre><code>## [1] 8</code></pre>
+<pre class="r"><code>min(germany_age$tsize)</code></pre>
+<pre><code>## [1] 7</code></pre>
+<pre class="r"><code>min(germany_age$tratio)</code></pre>
+<pre><code>## [1] 0.005159959</code></pre>
+<pre class="r"><code>max(germany_age$age)</code></pre>
+<pre><code>## [1] 80</code></pre>
+<pre class="r"><code>max(germany_age$time)</code></pre>
+<pre><code>## [1] 2456</code></pre>
+<pre class="r"><code>max(germany_age$tsize)</code></pre>
+<pre><code>## [1] 100</code></pre>
+<pre class="r"><code>max(germany_age$tratio)</code></pre>
+<pre><code>## [1] 3.625</code></pre>
+<pre class="r"><code>n_distinct(germany_age$age)</code></pre>
+<pre><code>## [1] 12</code></pre>
+<pre class="r"><code>n_distinct(germany_age$time)</code></pre>
+<pre><code>## [1] 127</code></pre>
+<pre class="r"><code>n_distinct(germany_age$tsize)</code></pre>
+<pre><code>## [1] 39</code></pre>
+<pre class="r"><code>n_distinct(germany_age$tratio)</code></pre>
+<pre><code>## [1] 132</code></pre>
+<pre class="r"><code>germany_age %&gt;% select_if(is.numeric) %&gt;% na.omit %&gt;% cor</code></pre>
+<pre><code>##                 Freq         age        tsize       pnodes     progrec
+## Freq     1.000000000 -0.03666772  0.006415088 -0.015050253 -0.03353391
+## age     -0.036667721  1.00000000 -0.017038056  0.110290494  0.23239367
+## tsize    0.006415088 -0.01703806  1.000000000  0.298019162 -0.12714675
+## pnodes  -0.015050253  0.11029049  0.298019162  1.000000000 -0.05936482
+## progrec -0.033533908  0.23239367 -0.127146754 -0.059364815  1.00000000
+## estrec  -0.034270659  0.35218812 -0.134313483 -0.124683327  0.54684778
+## time     0.006761880  0.11762827  0.029284476 -0.236407665  0.06048466
+## tratio   0.009260897 -0.05898085  0.032342789 -0.003844832 -0.04854406
+##              estrec        time       tratio
+## Freq    -0.03427066  0.00676188  0.009260897
+## age      0.35218812  0.11762827 -0.058980854
+## tsize   -0.13431348  0.02928448  0.032342789
+## pnodes  -0.12468333 -0.23640766 -0.003844832
+## progrec  0.54684778  0.06048466 -0.048544058
+## estrec   1.00000000  0.05206211 -0.081847302
+## time     0.05206211  1.00000000 -0.270384312
+## tratio  -0.08184730 -0.27038431  1.000000000</code></pre>
+<pre class="r"><code>?GBSG2</code></pre>
+<p>I made the ‘combined’ dataset to be able to see the frequencies at each age for which German citizens had breast cancer incidence or had committed suicide. I grouped by “age” and wanted to see the minimum and maximum tumor sizes for each age, so I used the min and max functions. I filtered the data to find at least 10 people per group and used the arrange function to view the ages from highest to lowest. I found that around ages 60-65, there was the highest occurrence of both suicides and cancer incidence.</p></li>
+</ol>
+<p>Then, I ran my summary statistics functions on mean, sd, variance, min, max, and n_distinct for each of the variables: “age”,“time”, tumor size, and tumor size to survival time ratio. The cor function generally showed weak correlational values between all the values of “germany_age”. The strongest correlation I saw was 0.54684778 between the progesterone and estrogen receptor values, which is unsurprising as individuals with breast cancer of any age would likely have similarly elevated or depressed sex hormone levels.</p>
+<ol start="4" style="list-style-type: decimal">
+<li><p>Make visualizations</p>
+<pre class="r"><code>library(ggplot2)
+
+plot1 &lt;- ggplot(data = germany_age, aes(x = age, y = tsize))+
+  geom_bar(stat=&quot;summary&quot;,fun.y=&quot;mean&quot;)+geom_errorbar(stat=&quot;summary&quot;) 
+plot1 + ggtitle(&quot;Tumor Size vs Age&quot;) + ylab(&quot;Tumor Size&quot;) + xlab(&quot;Age&quot;) </code></pre>
+<pre><code>## No summary function supplied, defaulting to `mean_se()</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code>plot2 &lt;- ggplot(data = germany_age, aes(x = age, y = time)) +  
+  geom_bar(stat=&quot;summary&quot;,fun.y=&quot;mean&quot;)+ geom_errorbar(stat=&quot;summary&quot;) 
+plot2 + ggtitle(&quot;Breast Cancer Recurrence Free Survival Time vs Age&quot;) + ylab(&quot;Time (days)&quot;) + xlab(&quot;Age&quot;) </code></pre>
+<pre><code>## No summary function supplied, defaulting to `mean_se()</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-3-2.png" width="672" /></p>
+<pre class="r"><code>plot3 &lt;- ggplot(data = germany_age, aes(x = age, y = tratio, color=&quot;red&quot;)) +  geom_point(size=2) 
+plot3 + ggtitle(&quot;Tumor Size to Survival Time Ratio vs Age &quot;) + ylab(&quot;Tumor size to Survival Time (days) Ratio&quot;) + xlab(&quot;Age&quot;) </code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-3-3.png" width="672" /></p></li>
+</ol>
+<p>Plot1 shows the relative tumor size across ages for the combined dataset “age_germany”. There doesn’t appaear to be any specific association with age for the size of the cancer tumors, but middle age and elderly Germans from the dataset generally appear to have larger tumor sizes. Plot2 shows that there is greater survival time (in days) in general for middle age breast cancer patients, and less for younger and very elderly patients. Plot 3 doesn’t show much association between the ratio of tumor size to survival time over various ages, though there are some large ratio value outliers around age 50.</p>
+<ol start="5" style="list-style-type: decimal">
+<li>Perform k-means/PAM clustering or PCA on (at least) your numeric variables.</li>
+</ol>
+<pre class="r"><code>pca &lt;- germany_age %&gt;% dplyr::select(-sex, -Freq, -method, -method2, -horTh, -menostat, -pnodes, -progrec, -estrec, -tgrade)
+print &lt;- princomp(na.omit(pca), cor = TRUE, scores = T)
+summary(print, loadings=T)</code></pre>
+<pre><code>## Importance of components:
+##                           Comp.1    Comp.2    Comp.3    Comp.4
+## Standard deviation     1.1488199 1.0041260 0.9780473 0.8457939
+## Proportion of Variance 0.3299468 0.2520673 0.2391441 0.1788418
+## Cumulative Proportion  0.3299468 0.5820140 0.8211582 1.0000000
+## 
+## Loadings:
+##        Comp.1 Comp.2 Comp.3 Comp.4
+## age     0.367  0.151  0.902  0.167
+## tsize         -0.977  0.143  0.159
+## time    0.674 -0.149 -0.117 -0.714
+## tratio -0.640         0.389 -0.661</code></pre>
+<pre class="r"><code>plot(print)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>eigenvalue&lt;-pca$sdev^2 
+
+var=round(eigenvalue/sum(eigenvalue),2) 
+round(cumsum(eigenvalue)/sum(eigenvalue),2) </code></pre>
+<pre><code>## numeric(0)</code></pre>
+<pre class="r"><code>glimpse(pca)</code></pre>
+<pre><code>## Observations: 2,394
+## Variables: 4
+## $ age    &lt;dbl&gt; 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25…
+## $ tsize  &lt;int&gt; 22, 29, 22, 29, 22, 29, 22, 29, 22, 29, 22, 29, 22, 29, 22, 29…
+## $ time   &lt;int&gt; 861, 343, 861, 343, 861, 343, 861, 343, 861, 343, 861, 343, 86…
+## $ tratio &lt;dbl&gt; 0.02555168, 0.08454810, 0.02555168, 0.08454810, 0.02555168, 0.…</code></pre>
+<pre class="r"><code>eigenvalue</code></pre>
+<pre><code>## numeric(0)</code></pre>
+<pre class="r"><code>biplot(print)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-4-2.png" width="672" /></p>
+<p>I used the dplyr select() function to remove any remaining non-numeric variables. princomp() takes an na.omitted pca and calculates covariance data on scaled data values and allows for a prinicpal component analysis. The first plot of “print” shows the variances of components 1 through 4. Component 1 had the highest proportion of variance at .3299. For the biplot of “print”, age and survival time have a small angle between them, suggesting a higher correlation between these 2 variables. Besides that, all other variables are in completely different directions and have large angles between them, suggesting weak or no correlation.</p>
+<p>…</p>
+</div>
+
+              <hr>
+              <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div>
+            </div>
+          </div>
+          <hr>
+        <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+      </div>
+      
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

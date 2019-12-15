@@ -1,0 +1,5 @@
+"0","library(ggplot2)"
+"0",""
+"0","plot1 <- ggplot(data = germany_age, aes(x = age, y = tsize))+"
+"0","  geom_bar(stat=""summary"",fun.y=""mean"")+geom_errorbar(stat=""summary"") "
+"0","plot1 + ggtitle(""Tumor Size vs Age"") + ylab(""Tumor Size"") + xlab(""Age"") "

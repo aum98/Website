@@ -1,0 +1,471 @@
+---
+title: 'Project 2: Modeling, Testing, and Predicting'
+author: Aum Mhapankar, AJM5698
+date: ''
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  pdf_document:
+    toc: yes
+---
+
+
+
+<pre class="r"><code>library(tidyverse)
+library(dplyr)
+library(vcd)
+data(&quot;Suicide&quot;)
+library(TH.data)
+data(&quot;GBSG2&quot;)
+germany_age &lt;- Suicide %&gt;% inner_join(GBSG2, by=&quot;age&quot;) %&gt;% na.omit()
+germany_age$Freq&lt;-NULL
+germany_age$age.group&lt;-NULL
+germany_age$method2&lt;-NULL
+
+?Suicide
+?GBSG2</code></pre>
+<p>I chose to use the germany_age dataset, a joint dataset of the Suicide and GBSG2 datasets from the vcd package. The germany_age dataset is composed of 13 variables and 2394 observations, and it has data on suicide rates in Germany based on age, sex, and method of suicide. It also contains data from a breast cancer study in Germany, and the data are combined to be compared by age. Method is a categorical variable that indicates the technique used for suicide, including poison, cookgas, toxicgas, hang, drown, gun, knife, jump, and other. Menostat is also categorical and indicates whether the patient was post-menopausal or pre. Menopause is a binary variable I created from menostat (1 indicates post-menopausal, 0 indicates Pre). Age (in years) is a numeric variable stating the age of the individual. Tsize is a numeric variable revealing the size of the tumor (in mm). Pnodes is also a numeric variable showing the number of positive nodes present in a patient. Progrec is a numeric variable showing the # progesterone receptors in fmol. Estrec is a numeric var showing the number of estrogen receptors in fmol.</p>
+<ul>
+<li><strong>1. (15 pts)</strong> Perform a MANOVA testing whether any of your numeric variables (or a subset of them, if including them all doesn’t make sense) show a mean difference across levels of one of your categorical variables (3). If they do, perform univariate ANOVAs to find response(s) showing a mean difference across groups (3), and perform post-hoc t tests to find which groups differ (3). Discuss the number of tests you have performed, calculate the probability of at least one type I error (if unadjusted), and adjust the significance level accordingly (bonferroni correction) before discussing significant differences (3). Briefly discuss assumptions and whether or not they are likely to have been met (2).</li>
+</ul>
+<pre class="r"><code>man1&lt;-manova(cbind(tsize,pnodes)~menostat, data=germany_age)
+summary(man1)</code></pre>
+<pre><code>## Df Pillai approx F num Df den Df Pr(&gt;F)
+## menostat 1 0.015128 18.363 2 2391 1.218e-08 ***
+## Residuals 2392
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>summary.aov(man1)</code></pre>
+<pre><code>## Response tsize :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## menostat 1 480 480.32 1.8421 0.1748
+## Residuals 2392 623703 260.75
+##
+## Response pnodes :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## menostat 1 1153 1153.14 36.532 1.737e-09 ***
+## Residuals 2392 75504 31.57
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>germany_age%&gt;% group_by(menostat)%&gt;% summarise(mean(tsize),mean(pnodes))</code></pre>
+<pre><code>## # A tibble: 2 x 3
+##   menostat `mean(tsize)` `mean(pnodes)`
+##   &lt;fct&gt;            &lt;dbl&gt;          &lt;dbl&gt;
+## 1 Pre               29.3           3.78
+## 2 Post              30.2           5.21</code></pre>
+<pre class="r"><code>1-((1-.05)^3)</code></pre>
+<pre><code>## [1] 0.142625</code></pre>
+<pre class="r"><code>.05/3</code></pre>
+<pre><code>## [1] 0.01666667</code></pre>
+<p>I performed a MANOVA test to whether one of my 2 numeric variables of tsize (tumor size) and pnodes had a mean difference across any of the 2 levels of my categorical variable, menostat. There are multiple assumptions for MANOVA tests such as independent observations for random samples, multivariate normality of DVs, Homogeneity of within-group covariance matricies, linear relationships with DVs, lack of extreme uni/multivariate outliers, and no multicollinearity. It is not very likely that all assumptions were met, especially not having any uni/multivariate outliers. This test, nonetheless, had a significant result, so I did a summary.aov() (univariate ANOVA) test to determine which of the 2 variables was significant, and whether both were significant. Since the categorical predictor had 2 levels, the significant ANOVA test should tell us whether or not to support the ANOVA null hypothesis that there is no mean difference across groups, the alternative hypothesis being that there is a mean difference between tsize and pnodes across the categorical menostat variable. There are a total of 3 tests run, the MANOVA, and 2 ANOVA tests for each numeric var. The probability of at least 1 Type I error is (1-((1-.05)^3)) = 0.142625.</p>
+<p>Before adjusting for multiple comparisons (using a p-value of .05), I found that the MANOVA test showed significant difference in at least one of the 2 numeric variables across the menostat categorical(p-val = 1.218e-08, p&lt;.05), the first ANOVA on the tsize variable supports the null hypothesis that there is not mean difference for tsize across the groups (p-val = 0.1748, p &gt; .05), and the second ANOVA on the pnodes variable rejects the null hypothesis and supports the alternative H that there is a mean difference for pnodes across menostat groups (p-val =1.737e-09 , p&lt;.05).</p>
+<p>After doing the Bonferroni adjustment (.05/3), the adjusted p-val was 0.01666667 and the results from the pre-adjusted tests do not differ significantly. That is, the MANOVA still showed a significant difference in means(p &lt;0.01666667), the ANOVA on tsize did not show a significant mean difference(p&gt;0.01666667), and the ANOVA on pnodes did show a significant difference in means across menostat groups(p&lt;0.01666667).</p>
+<ul>
+<li><strong>2. (10 pts)</strong> Perform some kind of randomization test on your data (that makes sense). This can be anything you want! State null and alternative hypotheses, perform the test, and interpret the results (7). Create a plot visualizing the null distribution and the test statistic (3).</li>
+</ul>
+<pre class="r"><code>ggplot(germany_age,aes(pnodes,fill=menostat))+geom_histogram(bins=7)+facet_wrap(~menostat,ncol=2)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-3-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>germany_age%&gt;% group_by(menostat)%&gt;%summarise(mean1=mean(pnodes))%&gt;%summarise(meandifference=diff(mean1))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   meandifference
+##            &lt;dbl&gt;
+## 1           1.44</code></pre>
+<pre class="r"><code>library(vegan)
+dist1 &lt;- germany_age%&gt;%dplyr::select(tsize,pnodes)%&gt;%dist()
+
+
+table(germany_age$menostat)</code></pre>
+<pre><code>## 
+##  Pre Post 
+##  882 1512</code></pre>
+<pre class="r"><code>SST&lt;- sum(dist1^2)/2394
+SSW&lt;-germany_age%&gt;%group_by(menostat)%&gt;%dplyr::select(tsize,pnodes)%&gt;%
+ do(d=dist(.[2:3],&quot;euclidean&quot;))%&gt;%ungroup()%&gt;%
+ summarise(sum(d[[1]]^2)/882 + sum(d[[2]]^2)/1521)%&gt;%pull
+observ_F&lt;-((SST-SSW)/1)/(SSW/2392)
+observ_F</code></pre>
+<pre><code>## [1] 14.878</code></pre>
+<pre class="r"><code>Fs&lt;-replicate(1000,{
+new1&lt;-germany_age%&gt;%mutate(menostat=sample(menostat))
+SST&lt;- sum(dist1^2)/2392
+SSW&lt;-new1%&gt;%group_by(menostat)%&gt;%dplyr::select(tsize,pnodes)%&gt;%
+ do(d=dist(.[2:3],&quot;euclidean&quot;))%&gt;%ungroup()%&gt;%
+ summarise(sum(d[[1]]^2)/882 + sum(d[[2]]^2)/1521)%&gt;%pull
+((SST-SSW)/1)/(SSW/2392)})
+
+#pval
+mean(Fs&gt;observ_F)</code></pre>
+<pre><code>## [1] 0.039</code></pre>
+<pre class="r"><code>hist(Fs,prob=T);abline(v=observ_F,col=&quot;red&quot;)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-3-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#PERMANOVA
+adonis(dist1~menostat,data=germany_age)</code></pre>
+<pre><code>##
+## Call:
+## adonis(formula = dist1 ~ menostat, data = germany_age)
+##
+## Permutation: free
+## Number of permutations: 999
+##
+## Terms added sequentially (first to last)
+##
+## Df SumsOfSqs MeanSqs F.Model R2 Pr(&gt;F)
+## menostat 1 1633 1633.46 5.5881 0.00233 0.024 *
+## Residuals 2392 699207 292.31 0.99767
+## Total 2393 700840 1.00000
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<p>Null Hypothesis: the mean number of pnodes and mean tsize is the same for both menostat groups: “Pre” and “Post”.
+Alternative Hypothesis: the mean number of pnodes and mean tsize is different for both menostat groups: “Pre” and “Post”.
+The PERMANOVA (adonis()) test results (p-val=.012) show that there is a significant difference (pval&lt;.05) in the means of both pnodes and tsize in the “Pre” and “Post” menostat groups. The calculated p-value of 0.035 (&lt;.05) shows that we reject the null hypothesis in support of the alternative hypothesis that the mean number of pnodes and mean tsize is different for both menostat groups: “Pre” and “Post”. In addition, the observed F value is 14.878.</p>
+<ul>
+<li><strong>3. (35 pts)</strong> Build a linear regression model predicting one of your response variables from at least 2 other variables, including their interaction. Mean-center any numeric variables involved in the interaction.</li>
+</ul>
+<pre class="r"><code>#to center the means:
+germany_age$progrec&lt;-germany_age$progrec-mean(germany_age$progrec)
+germany_age$estrec&lt;-germany_age$estrec-mean(germany_age$estrec)
+
+fit1 &lt;-lm(pnodes ~ progrec*estrec,data = germany_age)
+summary(fit1)</code></pre>
+<pre><code>##
+## Call:
+## lm(formula = pnodes ~ progrec * estrec, data =
+germany_age)
+##
+## Residuals:
+## Min 1Q Median 3Q Max
+## -4.782 -3.125 -1.578 1.245 33.213
+##
+## Coefficients:
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 4.481e+00 1.165e-01 38.477 &lt; 2e-16 ***
+## progrec -5.027e-03 8.837e-04 -5.688 1.44e-08 ***
+## estrec -5.179e-03 8.468e-04 -6.116 1.12e-09 ***
+## progrec:estrec 9.410e-06 1.222e-06 7.700 1.98e-14 ***
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Residual standard error: 5.55 on 2390 degrees of freedom
+## Multiple R-squared: 0.03948, Adjusted R-squared: 0.03828
+## F-statistic: 32.75 on 3 and 2390 DF, p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>mean_new &lt;-predict(fit1,germany_age)
+ggplot(data=germany_age,aes(x=progrec,y=estrec))+geom_point()+geom_line(data=germany_age,aes(y = mean_new))</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-4-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>library(lmtest)
+library(sandwich)
+bptest(fit1)</code></pre>
+<pre><code>## 
+##  studentized Breusch-Pagan test
+## 
+## data:  fit1
+## BP = 38.382, df = 3, p-value = 2.347e-08</code></pre>
+<pre class="r"><code>#linearity and homoskedasticity
+fval &lt;-fit1$fitted.values
+resids &lt;-fit1$residuals
+
+ggplot()+geom_point(aes(fval,resids))+geom_hline(yintercept = 0, color=&#39;red&#39;)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-4-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#normality
+ggplot()+geom_histogram(aes(resids),bins = 23)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-4-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ks.test(resids,&quot;pnorm&quot;,mean=0,sd(resids))</code></pre>
+<pre><code>## 
+##  One-sample Kolmogorov-Smirnov test
+## 
+## data:  resids
+## D = 0.19636, p-value &lt; 2.2e-16
+## alternative hypothesis: two-sided</code></pre>
+<pre class="r"><code>#robust SE
+summary(fit1)$coef[,1:2]</code></pre>
+<pre><code>##                     Estimate   Std. Error
+## (Intercept)     4.481216e+00 1.164639e-01
+## progrec        -5.026720e-03 8.837239e-04
+## estrec         -5.178905e-03 8.467835e-04
+## progrec:estrec  9.410438e-06 1.222201e-06</code></pre>
+<pre class="r"><code>coeftest(fit1,vcov =vcovHC(fit1))[,1:2]</code></pre>
+<pre><code>##                     Estimate   Std. Error
+## (Intercept)     4.481216e+00 1.100517e-01
+## progrec        -5.026720e-03 6.472436e-04
+## estrec         -5.178905e-03 5.290929e-04
+## progrec:estrec  9.410438e-06 7.457670e-07</code></pre>
+<pre class="r"><code>#model for variation
+(sum((germany_age$pnodes-mean(germany_age$pnodes))^2)-sum(fit1$residuals^2))/sum((germany_age$pnodes-mean(germany_age$pnodes))^2)</code></pre>
+<pre><code>## [1] 0.03948235</code></pre>
+<pre class="r"><code>fit2&lt;-lm(pnodes ~ progrec +estrec, data=germany_age)
+summary(fit2)</code></pre>
+<pre><code>##
+## Call:
+## lm(formula = pnodes ~ progrec + estrec, data =
+germany_age)
+##
+## Residuals:
+## Min 1Q Median 3Q Max
+## -4.176 -3.115 -1.900 0.965 32.815
+##
+## Coefficients:
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 4.6842105 0.1148148 40.798 &lt; 2e-16 ***
+## progrec 0.0002898 0.0005582 0.519 0.604
+## estrec -0.0046365 0.0008541 -5.429 6.25e-08 ***
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Residual standard error: 5.618 on 2391 degrees of
+freedom
+## Multiple R-squared: 0.01566, Adjusted R-squared: 0.01483
+## F-statistic: 19.02 on 2 and 2391 DF, p-value: 6.407e-09</code></pre>
+<pre class="r"><code>null&lt;-lm(pnodes~progrec,data=germany_age)
+summary(null)</code></pre>
+<pre><code>##
+## Call:
+## lm(formula = pnodes ~ progrec, data = germany_age)
+##
+## Residuals:
+## Min 1Q Median 3Q Max
+## -3.848 -3.444 -1.814 1.167 33.370
+##
+## Coefficients:
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 4.6842105 0.1154961 40.557 &lt; 2e-16 ***
+## progrec -0.0013674 0.0004701 -2.909 0.00366 **
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Residual standard error: 5.651 on 2392 degrees of
+freedom
+## Multiple R-squared: 0.003524, Adjusted R-squared:
+0.003108
+## F-statistic: 8.46 on 1 and 2392 DF, p-value: 0.003665</code></pre>
+<p>Acording to the results of the linear regression model and their interactions, when progesterone receptor and estrogen receptor are both 0 (in fmol), the number of positive nodes (pnodes) is 4.481. For every additional progesterone receptor (fmol) the total number positve nodes (pnodes) changes by -5.027e-03. For every additional estrogen receptor (fmol) the total number positve nodes (pnodes) changes by -5.179e-03. For every additional progesterone and estrogen receptor in fmol (interaction), the total number of positive nodes (pnodes) increases by 9.410e-06. The assumptions of linearity, homoskedasticity, and normality do not seem to be met as it appears there is unequal variance and the spread is not normal across these graphs. My robust SE, when using the coeftest(), the Robust SE observed was overall slightly less than original standard error.</p>
+<p>The model explains approximately 0.03948235 of variation and is not a great model for predicting variation.</p>
+<ul>
+<li><strong>4. (5 pts)</strong> Rerun same regression model (with interaction), but this time compute bootstrapped standard errors. Discuss any changes you observe in SEs and p-values using these SEs compared to the original SEs and the robust SEs)</li>
+</ul>
+<pre class="r"><code>fit1 &lt;-lm(pnodes ~ progrec*estrec,data = germany_age)
+summary(fit1)</code></pre>
+<pre><code>##
+## Call:
+## lm(formula = pnodes ~ progrec * estrec, data =
+germany_age)
+##
+## Residuals:
+## Min 1Q Median 3Q Max
+## -4.782 -3.125 -1.578 1.245 33.213
+##
+## Coefficients:
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 4.481e+00 1.165e-01 38.477 &lt; 2e-16 ***
+## progrec -5.027e-03 8.837e-04 -5.688 1.44e-08 ***
+## estrec -5.179e-03 8.468e-04 -6.116 1.12e-09 ***
+## progrec:estrec 9.410e-06 1.222e-06 7.700 1.98e-14 ***
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Residual standard error: 5.55 on 2390 degrees of freedom
+## Multiple R-squared: 0.03948, Adjusted R-squared: 0.03828
+## F-statistic: 32.75 on 3 and 2390 DF, p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>sample1 &lt;-replicate(5000, {
+  boot1 &lt;-germany_age[sample(nrow(germany_age),replace = TRUE),]
+  fit3 &lt;-lm(pnodes ~ progrec*estrec, data=boot1)
+  coef(fit3)
+  
+})
+sample1 %&gt;%t%&gt;%as.data.frame() %&gt;% summarize_all(sd)</code></pre>
+<pre><code>##   (Intercept)      progrec       estrec progrec:estrec
+## 1   0.1097155 0.0006561196 0.0005239977   7.608665e-07</code></pre>
+<p>Using the bootstrapped SEs, the p-values are the same and showed no change. The bootstrapped SEs are less than the original SEs for progrec, estrec, and the interaction regression model SEs, and are very close but still slightly less than robust SEs for progrec, estrec, and the interaction model.</p>
+<ul>
+<li><strong>5. (40 pts)</strong> Perform a logistic regression predicting a binary categorical variable (if you don’t have one, make/get one) from at least two explanatory variables (interaction not necessary).</li>
+</ul>
+<pre class="r"><code>germany_age$menopause&lt;-ifelse(germany_age$menostat==&quot;Post&quot;,1,0)
+#log regress
+fit4&lt;-glm(menopause~progrec+estrec+tsize,data=germany_age,family=binomial(link=&quot;logit&quot;))
+coeftest(fit4)</code></pre>
+<pre><code>##
+## z test of coefficients:
+##
+## Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept) 0.43737251 0.09478490 4.6144 3.943e-06 ***
+## progrec -0.00059159 0.00031658 -1.8687 0.06167 .
+## estrec 0.00551518 0.00048005 11.4888 &lt; 2.2e-16 ***
+## tsize 0.00708234 0.00275714 2.5687 0.01021 *
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>#coefficient
+exp(coef(fit4))</code></pre>
+<pre><code>## (Intercept)     progrec      estrec       tsize 
+##   1.5486328   0.9994086   1.0055304   1.0071075</code></pre>
+<pre class="r"><code>#confusion matrix
+germany_age$predict &lt;-predict(fit4,data=germany_age,type=&quot;response&quot;)
+table(predict=as.numeric(germany_age$predict&gt;.5),truth=germany_age$menopause)%&gt;%addmargins</code></pre>
+<pre><code>##        truth
+## predict    0    1  Sum
+##     0     54   18   72
+##     1    828 1494 2322
+##     Sum  882 1512 2394</code></pre>
+<pre class="r"><code>#accuracy
+(54+1494)/2394</code></pre>
+<pre><code>## [1] 0.6466165</code></pre>
+<pre class="r"><code>#sensitivity
+1494/1512</code></pre>
+<pre><code>## [1] 0.9880952</code></pre>
+<pre class="r"><code>#specifity
+54/72</code></pre>
+<pre><code>## [1] 0.75</code></pre>
+<pre class="r"><code>#PPV
+1494/2322</code></pre>
+<pre><code>## [1] 0.6434109</code></pre>
+<pre class="r"><code>#plot
+library(plotROC)
+ggplot(germany_age,aes(progrec,predict,color=menostat))+geom_line()</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#density
+logit&lt;-predict(fit4)
+menostat &lt;-factor(germany_age$menostat, levels = c(&quot;Pre&quot;,&quot;Post&quot;))
+ggplot(germany_age, aes(logit,fill=as.factor(menostat)))+geom_density(alpha=0.3)+geom_vline(xintercept = 0, lty=2)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-6-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#ROC curve and AUC
+library(pROC)
+library(plotROC)
+data &lt;- germany_age %&gt;% mutate(prob=predict(fit4,type=&quot;response&quot;),
+        prediction = ifelse(prob&gt;.5,1,0))
+class &lt;- data %&gt;% transmute(prob,predict,truth=menopause)
+ROC &lt;-ggplot(class)+geom_roc(aes(d=truth,m=prob),n.cuts = 0)+geom_segment(aes(x=0,xend=1,y=0,yend=1),lty=2)
+ROC</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-6-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>calc_auc(ROC)</code></pre>
+<pre><code>##   PANEL group       AUC
+## 1     1    -1 0.6800292</code></pre>
+<pre class="r"><code>#CV
+class_diag&lt;-function(probs,truth){
+tab&lt;-table(factor(probs&gt;.5,levels=c(&quot;FALSE&quot;,&quot;TRUE&quot;)),truth) 
+acc=sum(diag(tab))/sum(tab)
+sens=tab[2,2]/colSums(tab)[2]
+spec=tab[1,1]/colSums(tab)[1]
+ppv=tab[2,2]/rowSums(tab)[2]
+if(is.numeric(truth)==FALSE &amp; is.logical(truth)==FALSE) truth&lt;-as.numeric(truth)-1
+
+ord&lt;-order(probs, decreasing=TRUE)
+probs &lt;- probs[ord]; truth &lt;- truth[ord]
+TPR=cumsum(truth)/max(1,sum(truth)) 
+FPR=cumsum(!truth)/max(1,sum(!truth))
+dup&lt;-c(probs[-1]&gt;=probs[-length(probs)], FALSE) 
+TPR&lt;-c(0,TPR[!dup],1); FPR&lt;-c(0,FPR[!dup],1)
+n &lt;- length(TPR)
+auc&lt;- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+data.frame(acc,sens,spec,ppv,auc) }
+#10fold
+set.seed(1234)
+k = 10
+dat1 &lt;- germany_age[sample(nrow(germany_age)), ]
+folds &lt;- cut(seq(1:nrow(germany_age)), breaks = k, labels = F) 
+diags &lt;- NULL
+for (i in 1:k) {
+train &lt;- dat1[folds != i, ]
+test &lt;- dat1[folds == i, ]
+truth &lt;- test$menopause
+fit5&lt;- glm(menopause ~ progrec+estrec+tsize, data = train, family =&quot;binomial&quot;) 
+probs &lt;- predict(fit5, newdata = test, type = &quot;response&quot;)
+diags &lt;- rbind(diags, class_diag(probs, truth)) }
+diags %&gt;% summarize_all(mean)</code></pre>
+<pre><code>##         acc   sens       spec      ppv       auc
+## 1 0.6428487 0.9881 0.05470332 0.641688 0.6809157</code></pre>
+<pre class="r"><code>apply(diags,2,mean)</code></pre>
+<pre><code>##        acc       sens       spec        ppv        auc 
+## 0.64284868 0.98810001 0.05470332 0.64168801 0.68091574</code></pre>
+<pre class="r"><code>fit6 &lt;- lm(menopause ~ progrec+estrec+tsize, data = train, family =&quot;binomial&quot;) 
+summary(fit6)</code></pre>
+<pre><code>##
+## Call:
+## lm(formula = menopause ~ progrec + estrec + tsize, data
+= train,
+## family = &quot;binomial&quot;)
+##
+## Residuals:
+## Min 1Q Median 3Q Max
+## -0.9765 -0.5409 0.2367 0.4260 0.4951
+##
+## Coefficients:
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 5.762e-01 2.134e-02 27.003 &lt; 2e-16 ***
+## progrec -1.400e-04 4.922e-05 -2.845 0.00449 **
+## estrec 9.135e-04 7.613e-05 12.000 &lt; 2e-16 ***
+## tsize 1.756e-03 6.307e-04 2.785 0.00540 **
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Residual standard error: 0.4663 on 2150 degrees of
+freedom
+## Multiple R-squared: 0.07116, Adjusted R-squared: 0.06986
+## F-statistic: 54.9 on 3 and 2150 DF, p-value: &lt; 2.2e-16</code></pre>
+<p>We can see by the coefficient estimates the effects the various variables (progrec, estrec, and tsize) have on menopause, the binary categorical variable. For every increase in progesterone receptors by 1 (fmol), the chance of menopause (menostat = “Post”), changes by 0.9994086. For every increase in estrogen receptors by 1 (fmol), the chance of menopause (menostat = “Post”), increases by 1.0055304. For every increase in tumor size (mm) by 1, the chance of menopause (menostat = “Post”), increases by 1.0071075.</p>
+<p>The accuracy (proportion was classified correctly) from the model is calculated to be approximately 0.6466, sensitivity is the TPR, true positive rate, (probability of correctly predicting post-menopausal rates (menopause =“1”)) and is calculated to be approximately 0.9881. Specificity is the TNR, true negative rate(- cases classified correctly), and it was calculated to be 0.75.</p>
+<p>The precision PPV is the proportion of patients who are predicted as post-menopausal vs those who actually are, and it came out to 0.6434. For my ROC, the calculated AUC was 0.6800292, which suggests how well the model is predicting. The auc here is fairly low, meaning overall, the model is not predicting well and tsize, progrec, and estrec variables are not good predictors of menopause status.</p>
+<p>I performed a 10 fold CV to find the accuracy to be 0.64242329, sensitivity (TPR) to be 0.99158978, specificity (TNR) to be 0.04420407, ppv (recall) to be 0.64012094, and auc to be 0.67995765.</p>
+<ul>
+<li><strong>6. (10 pts)</strong> Choose one variable you want to predict (can be one you used from before; either binary or continuous) and run a LASSO regression inputting all the rest of your variables as predictors. Choose lambda to give the simplest model whose accuracy is near that of the best (i.e., <code>lambda.1se</code>). Discuss which variables are retained. Perform 10-fold CV using this model: if response in binary, compare model’s out-of-sample accuracy to that of your logistic regression in part 5; if response is numeric, compare the residual standard error (at the bottom of the summary output, aka RMSE): lower is better fit!</li>
+</ul>
+<pre class="r"><code>library(glmnet)
+y&lt;-as.matrix(germany_age$tsize)
+x&lt;-germany_age%&gt;%dplyr::select(menopause,pnodes,progrec,estrec)%&gt;%mutate_all(scale)%&gt;%as.matrix
+cv&lt;-cv.glmnet(x,y)
+lasso1&lt;- glmnet(x,y,lambda = cv$lambda.1se) 
+coef(lasso1)</code></pre>
+<pre><code>## 5 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                    s0
+## (Intercept) 29.872180
+## menopause    .       
+## pnodes       2.058886
+## progrec      .       
+## estrec       .</code></pre>
+<pre class="r"><code>set.seed(1234)
+k = 10
+dat2 &lt;- germany_age[sample(nrow(germany_age)), ]
+folds &lt;- cut(seq(1:nrow(germany_age)), breaks = k, labels = F)
+diags &lt;- NULL 
+for (i in 1:k) {
+train &lt;- dat2[folds != i, ] 
+
+test &lt;- dat2[folds == i, ]
+fit7 &lt;- lm(tsize ~ pnodes, data = train) 
+
+yhat &lt;- predict(fit6, newdata = test)
+diags &lt;- mean((test$menopause - yhat)^2) }
+
+mean(diags)</code></pre>
+<pre><code>## [1] 0.204304</code></pre>
+<pre class="r"><code>summary(fit7)</code></pre>
+<pre><code>##
+## Call:
+## lm(formula = tsize ~ pnodes, data = train)
+##
+## Residuals:
+## Min 1Q Median 3Q Max
+## -24.746 -10.369 -2.686 6.502 69.066
+##
+## Coefficients:
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 26.0626 0.4336 60.10 &lt;2e-16 ***
+## pnodes 0.8119 0.0595 13.65 &lt;2e-16 ***
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Residual standard error: 15.45 on 2152 degrees of
+freedom
+## Multiple R-squared: 0.07964, Adjusted R-squared: 0.07921
+## F-statistic: 186.2 on 1 and 2152 DF, p-value: &lt; 2.2e-16</code></pre>
+<p>This conducted LASSO test’s goal was to predict tumor size from variables menopause, pnodes, progrec, and estrec. Only the pnodes variable had a non-zero result of 1.790349 and was retained, meaning it was the most significant predictor of tumor size. The residual standard error of 15.35 in this problem is greater than the residual standard error of 0.4652 from the 10 fold CV conducted in problem 5. The lower RMSE is a better fit, so the LASSO test showed a worse fit than the 10 fold CV from problem 5.</p>
+<p>…</p>

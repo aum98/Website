@@ -1,0 +1,4 @@
+"0",""
+"0","plot2 <- ggplot(data = germany_age, aes(x = age, y = time)) +  "
+"0","  geom_bar(stat=""summary"",fun.y=""mean"")+ geom_errorbar(stat=""summary"") "
+"0","plot2 + ggtitle(""Breast Cancer Recurrence Free Survival Time vs Age"") + ylab(""Time (days)"") + xlab(""Age"") "

@@ -1,0 +1,4 @@
+"0",""
+"0","plot3 <- ggplot(data = germany_age, aes(x = age, y = tratio, color=""red"")) +  geom_point(size=2) "
+"0","plot3 + ggtitle(""Tumor Size to Survival Time Ratio vs Age "") + ylab(""Tumor size to Survival Time (days) Ratio"") + xlab(""Age"") "
+"0",""

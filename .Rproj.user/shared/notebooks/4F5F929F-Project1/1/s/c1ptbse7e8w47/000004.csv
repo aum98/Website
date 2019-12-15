@@ -1,0 +1,26 @@
+"0","eigenvalue<-pca$sdev^2 "
+"0",""
+"0","var=round(eigenvalue/sum(eigenvalue),2) "
+"0","round(cumsum(eigenvalue)/sum(eigenvalue),2) "
+"1","numeric(0)
+"
+"0","glimpse(pca)"
+"1","Observations: 2,394
+"
+"1","Variables: 4
+"
+"1","$ age    [3m[38;5;246m<dbl>[39m[23m 25, 25, 25, 25, 25, 25, 25, 25…
+"
+"1",""
+"1","$ tsize  [3m[38;5;246m<int>[39m[23m 22, 29, 22, 29, 22, 29, 22, 29…
+"
+"1",""
+"1","$ time   [3m[38;5;246m<int>[39m[23m 861, 343, 861, 343, 861, 343, …
+"
+"1",""
+"1","$ tratio [3m[38;5;246m<dbl>[39m[23m 0.02555168, 0.08454810, 0.0255…
+"
+"0","eigenvalue"
+"1","numeric(0)
+"
+"0","biplot(print)"

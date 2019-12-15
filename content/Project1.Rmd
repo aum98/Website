@@ -1,0 +1,148 @@
+---
+title: 'Project 1: Exploratory Data Analysis'
+author: "Aum Mhapankar, ajm5698"
+date: "9/16/2019"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data Wrangling and Data Exploration
+    
+    
+I chose the datasets, Suicide and GBSG2, as they gave the suicide rates and Breast Cancer data in Germany, respectively. The variables included in the Suicide dataset include sex, age, and methods for committing suicide. The Breast Cancer dataset includes tumor size, age, survival time, and more variables. I combined them by age to see the effect of age on these various variables. I am not entirely sure whether there will be associations with age groups that have greater cancer rates and higher rates of suicide, but this association is certainly highly possible. It would be interesting to do a similar data analysis with a suicide dataset and data on the family members of those affected with cancer.
+
+2. Join your 2+ separate data sources into a single dataset
+
+
+
+```{r}
+data(package = .packages(all.available = TRUE))
+library(tidyverse)
+library(dplyr)
+library(vcd)
+data("Suicide")
+library(TH.data)
+data("GBSG2")
+germany_age <- Suicide %>% inner_join(GBSG2, by="age") %>% na.omit()
+head(germany_age)
+glimpse(germany_age)
+```
+I used the inner_join function to join the 2 datasets on the basis of Age. I also removed NAs using na.omit() and glimpsed the combined dataset: 'germany_age'.
+
+3. Create summary statistics
+
+
+    
+    ```{r}
+#dplyr functions
+    combined <- germany_age %>% group_by(age) %>% 
+  summarize(count = n(),max_tumor = max(germany_age$tsize),  min_tumor = min(germany_age$tsize)) %>% filter(count > 10) %>%  arrange(desc(age)) 
+combined
+germany_age <- germany_age %>% dplyr::select(-age.group, -cens) %>% mutate(tratio=tsize/time) #added tratio to see ratio of tumor size to recurrence free survival time in patients
+
+#summary stats
+summary(germany_age)
+germany_age %>% summarize_all(mean,na.rm=T)
+var(germany_age)
+n_distinct(germany_age)
+summary(germany_age$age)
+summary(germany_age$time)
+summary(germany_age$tsize)
+summary(germany_age$tratio)
+mean(germany_age$age)
+mean(germany_age$time)
+mean(germany_age$tsize)
+mean(germany_age$tratio)
+sd(germany_age$age)
+sd(germany_age$time)
+sd(germany_age$tsize)
+sd(germany_age$tratio)
+var(germany_age$age)
+var(germany_age$time)
+var(germany_age$tsize)
+var(germany_age$tratio)
+min(germany_age$age)
+min(germany_age$time)
+min(germany_age$tsize)
+min(germany_age$tratio)
+max(germany_age$age)
+max(germany_age$time)
+max(germany_age$tsize)
+max(germany_age$tratio)
+n_distinct(germany_age$age)
+n_distinct(germany_age$time)
+n_distinct(germany_age$tsize)
+n_distinct(germany_age$tratio)
+
+germany_age %>% select_if(is.numeric) %>% na.omit %>% cor
+?GBSG2
+
+
+    
+```
+ I made the 'combined' dataset to be able to see the frequencies at each age for which German citizens had breast cancer incidence or had committed suicide. I grouped by "age" and wanted to see the minimum and maximum tumor sizes for each age, so I used the min and max functions. I filtered the data to find at least 10 people per group and used the arrange function to view the ages from highest to lowest. I found that around ages 60-65, there was the highest occurrence of both suicides and cancer incidence.
+ 
+ Then, I ran my summary statistics functions on mean, sd, variance, min, max, and n_distinct for each of the variables: "age","time", tumor size, and tumor size to survival time ratio. The cor function generally showed weak correlational values between all the values of "germany_age". The strongest correlation I saw was 0.54684778 between the progesterone and estrogen receptor values, which is unsurprising as individuals with breast cancer of any age would likely have similarly elevated or depressed sex hormone levels.
+ 
+ 
+4. Make visualizations
+
+
+    
+    ```{r}
+library(ggplot2)
+
+plot1 <- ggplot(data = germany_age, aes(x = age, y = tsize))+
+  geom_bar(stat="summary",fun.y="mean")+geom_errorbar(stat="summary") 
+plot1 + ggtitle("Tumor Size vs Age") + ylab("Tumor Size") + xlab("Age") 
+
+plot2 <- ggplot(data = germany_age, aes(x = age, y = time)) +  
+  geom_bar(stat="summary",fun.y="mean")+ geom_errorbar(stat="summary") 
+plot2 + ggtitle("Breast Cancer Recurrence Free Survival Time vs Age") + ylab("Time (days)") + xlab("Age") 
+
+plot3 <- ggplot(data = germany_age, aes(x = age, y = tratio, color="red")) +  geom_point(size=2) 
+plot3 + ggtitle("Tumor Size to Survival Time Ratio vs Age ") + ylab("Tumor size to Survival Time (days) Ratio") + xlab("Age") 
+
+```
+    
+    
+  Plot1 shows the relative tumor size across ages for the combined dataset "age_germany". There doesn't appaear to be any specific association with age for the size of the cancer tumors, but middle age and elderly Germans from the dataset generally appear to have larger tumor sizes. Plot2 shows that there is greater survival time (in days) in general for middle age breast cancer patients, and less for younger and very elderly patients. Plot 3 doesn't show much association between the ratio of tumor size to survival time over various ages, though there are some large ratio value outliers around age 50.
+  
+5. Perform k-means/PAM clustering or PCA on (at least) your numeric variables.
+
+```{r}
+pca <- germany_age %>% dplyr::select(-sex, -Freq, -method, -method2, -horTh, -menostat, -pnodes, -progrec, -estrec, -tgrade)
+print <- princomp(na.omit(pca), cor = TRUE, scores = T)
+summary(print, loadings=T)
+plot(print)
+eigenvalue<-pca$sdev^2 
+
+var=round(eigenvalue/sum(eigenvalue),2) 
+round(cumsum(eigenvalue)/sum(eigenvalue),2) 
+glimpse(pca)
+eigenvalue
+biplot(print)
+```
+
+  
+I used the dplyr select() function to remove any remaining non-numeric variables. princomp() takes an na.omitted pca and calculates covariance data on scaled data values and allows for a prinicpal component analysis. The first plot of "print" shows the variances of components 1 through 4. Component 1 had the highest proportion of variance at .3299. For the biplot of "print", age and survival time have a small angle between them, suggesting a higher correlation between these 2 variables. Besides that, all other variables are in completely different directions and have large angles between them, suggesting weak or no correlation. 
+    
+
+    
+
+...
+
+
+
+
+

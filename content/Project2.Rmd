@@ -1,0 +1,291 @@
+---
+title: 'Project 2: Modeling, Testing, and Predicting'
+author: Aum Mhapankar, AJM5698
+date: ''
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  pdf_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,fig.align="center",warning=FALSE,message=FALSE,fig.width=8, fig.height=5, linewidth=60)
+options(tibble.width = 100,width = 100)
+library(tidyverse)
+```
+
+
+```{R}
+library(tidyverse)
+library(dplyr)
+library(vcd)
+data("Suicide")
+library(TH.data)
+data("GBSG2")
+germany_age <- Suicide %>% inner_join(GBSG2, by="age") %>% na.omit()
+germany_age$Freq<-NULL
+germany_age$age.group<-NULL
+germany_age$method2<-NULL
+
+?Suicide
+?GBSG2
+
+```
+
+I chose to use the germany_age dataset, a joint dataset of the Suicide and GBSG2 datasets from the vcd package. The germany_age dataset is composed of 13 variables and 2394 observations, and it has data on suicide rates in Germany based on age, sex, and method of suicide. It also contains data from a breast cancer study in Germany, and the data are combined to be compared by age. Method is a categorical variable that indicates the technique used for suicide, including poison, cookgas, toxicgas, hang, drown, gun, knife, jump, and other. Menostat is also categorical and indicates whether the patient was post-menopausal or pre. Menopause is a binary variable I created from menostat (1 indicates post-menopausal, 0 indicates Pre). Age (in years) is a numeric variable stating the age of the individual. Tsize is a numeric variable revealing the size of the tumor (in mm). Pnodes is also a numeric variable showing the number of positive nodes present in a patient. Progrec is a numeric variable showing the # progesterone receptors in fmol. Estrec is a numeric var showing the number of estrogen receptors in fmol. 
+
+- **1. (15 pts)** Perform a MANOVA testing whether any of your numeric variables (or a subset of them, if including them all doesn't make sense) show a mean difference across levels of one of your categorical variables (3). If they do, perform univariate ANOVAs to find response(s) showing a mean difference across groups (3), and perform post-hoc t tests to find which groups differ (3). Discuss the number of tests you have performed, calculate the probability of at least one type I error (if unadjusted), and adjust the significance level accordingly (bonferroni correction) before discussing significant differences (3). Briefly discuss assumptions and whether or not they are likely to have been met (2).
+
+```{R}
+man1<-manova(cbind(tsize,pnodes)~menostat, data=germany_age)
+summary(man1)
+summary.aov(man1)
+germany_age%>% group_by(menostat)%>% summarise(mean(tsize),mean(pnodes))
+1-((1-.05)^3)
+.05/3
+
+```
+
+I performed a MANOVA test to whether one of my 2 numeric variables of tsize (tumor size) and pnodes had a mean difference across any of the 2 levels of my categorical variable, menostat. There are multiple assumptions for MANOVA tests such as independent observations for random samples, multivariate normality of DVs, Homogeneity of within-group covariance matricies, linear relationships with DVs, lack of extreme uni/multivariate outliers, and no multicollinearity. It is not very likely that all assumptions were met, especially not having any uni/multivariate outliers. This test, nonetheless, had a significant result, so I did a summary.aov() (univariate ANOVA) test to determine which of the 2 variables was significant, and whether both were significant. Since the categorical predictor had 2 levels, the significant ANOVA test should tell us whether or not to support the ANOVA null hypothesis that there is no mean difference across groups, the alternative hypothesis being that there is a mean difference between tsize and pnodes across the categorical menostat variable. There are a total of 3 tests run, the MANOVA, and 2 ANOVA tests for each numeric var. The probability of at least 1 Type I error is (1-((1-.05)^3)) = 0.142625. 
+
+Before adjusting for multiple comparisons (using a p-value of .05), I found that the MANOVA test showed significant difference in at least one of the 2 numeric variables across the menostat categorical(p-val = 1.218e-08, p<.05), the first ANOVA on the tsize variable supports the null hypothesis that there is not mean difference for tsize across the groups (p-val = 0.1748, p > .05), and the second ANOVA on the pnodes variable rejects the null hypothesis and supports the alternative H that there is a mean difference for pnodes across menostat groups (p-val =1.737e-09 , p<.05).
+
+After doing the Bonferroni adjustment (.05/3), the adjusted p-val was 0.01666667 and the results from the pre-adjusted tests do not differ significantly. That is, the MANOVA still showed a significant difference in means(p <0.01666667), the ANOVA on tsize did not show a significant mean difference(p>0.01666667), and the ANOVA on pnodes did show a significant difference in means across menostat groups(p<0.01666667).
+
+- **2. (10 pts)** Perform some kind of randomization test on your data (that makes sense). This can be anything you want! State null and alternative hypotheses, perform the test, and interpret the results (7). Create a plot visualizing the null distribution and the test statistic (3).
+```{R}
+ggplot(germany_age,aes(pnodes,fill=menostat))+geom_histogram(bins=7)+facet_wrap(~menostat,ncol=2)
+germany_age%>% group_by(menostat)%>%summarise(mean1=mean(pnodes))%>%summarise(meandifference=diff(mean1))
+library(vegan)
+dist1 <- germany_age%>%dplyr::select(tsize,pnodes)%>%dist()
+
+
+table(germany_age$menostat)
+SST<- sum(dist1^2)/2394
+SSW<-germany_age%>%group_by(menostat)%>%dplyr::select(tsize,pnodes)%>%
+ do(d=dist(.[2:3],"euclidean"))%>%ungroup()%>%
+ summarise(sum(d[[1]]^2)/882 + sum(d[[2]]^2)/1521)%>%pull
+observ_F<-((SST-SSW)/1)/(SSW/2392)
+observ_F
+
+Fs<-replicate(1000,{
+new1<-germany_age%>%mutate(menostat=sample(menostat))
+SST<- sum(dist1^2)/2392
+SSW<-new1%>%group_by(menostat)%>%dplyr::select(tsize,pnodes)%>%
+ do(d=dist(.[2:3],"euclidean"))%>%ungroup()%>%
+ summarise(sum(d[[1]]^2)/882 + sum(d[[2]]^2)/1521)%>%pull
+((SST-SSW)/1)/(SSW/2392)})
+
+#pval
+mean(Fs>observ_F)
+hist(Fs,prob=T);abline(v=observ_F,col="red")
+
+
+#PERMANOVA
+adonis(dist1~menostat,data=germany_age)
+
+
+```
+
+Null Hypothesis: the mean number of pnodes and mean tsize is the same for both menostat groups: "Pre" and "Post".
+Alternative Hypothesis: the mean number of pnodes and mean tsize is different for both menostat groups: "Pre" and "Post".
+The PERMANOVA (adonis()) test results (p-val=.012) show that there is a significant difference (pval<.05) in the means of both pnodes and tsize in the "Pre" and "Post" menostat groups. The calculated p-value of 0.035 (<.05) shows that we reject the null hypothesis in support of the alternative hypothesis that the mean number of pnodes and mean tsize is different for both menostat groups: "Pre" and "Post". In addition, the observed F value is 14.878.
+
+
+
+- **3. (35 pts)** Build a linear regression model predicting one of your response variables from at least 2 other variables, including their interaction. Mean-center any numeric variables involved in the interaction.
+
+   
+```{R}
+#to center the means:
+germany_age$progrec<-germany_age$progrec-mean(germany_age$progrec)
+germany_age$estrec<-germany_age$estrec-mean(germany_age$estrec)
+
+fit1 <-lm(pnodes ~ progrec*estrec,data = germany_age)
+summary(fit1)
+mean_new <-predict(fit1,germany_age)
+ggplot(data=germany_age,aes(x=progrec,y=estrec))+geom_point()+geom_line(data=germany_age,aes(y = mean_new))
+
+
+library(lmtest)
+library(sandwich)
+bptest(fit1)
+#linearity and homoskedasticity
+fval <-fit1$fitted.values
+resids <-fit1$residuals
+
+ggplot()+geom_point(aes(fval,resids))+geom_hline(yintercept = 0, color='red')
+#normality
+ggplot()+geom_histogram(aes(resids),bins = 23)
+
+ks.test(resids,"pnorm",mean=0,sd(resids))
+#robust SE
+summary(fit1)$coef[,1:2]
+coeftest(fit1,vcov =vcovHC(fit1))[,1:2]
+#model for variation
+(sum((germany_age$pnodes-mean(germany_age$pnodes))^2)-sum(fit1$residuals^2))/sum((germany_age$pnodes-mean(germany_age$pnodes))^2)
+fit2<-lm(pnodes ~ progrec +estrec, data=germany_age)
+summary(fit2)
+
+null<-lm(pnodes~progrec,data=germany_age)
+summary(null)
+
+```
+
+
+Acording to the results of the linear regression model and their interactions, when progesterone receptor and estrogen receptor are both 0 (in fmol), the number of positive nodes (pnodes) is 4.481. For every additional progesterone receptor (fmol) the total number positve nodes (pnodes) changes by -5.027e-03. For every additional estrogen receptor (fmol) the total number positve nodes (pnodes) changes by -5.179e-03. For every additional progesterone and estrogen receptor in fmol (interaction), the total number of positive nodes (pnodes) increases by 9.410e-06. The assumptions of linearity, homoskedasticity, and normality do not seem to be met as it appears there is unequal variance and the spread is not normal across these graphs. My robust SE, when using the coeftest(), the Robust SE observed was overall slightly less than original standard error.
+
+The model explains approximately 0.03948235 of variation and is not a great model for predicting variation. 
+
+- **4. (5 pts)** Rerun same regression model (with interaction), but this time compute bootstrapped standard errors. Discuss any changes you observe in SEs and p-values using these SEs compared to the original SEs and the robust SEs)
+```{R}
+
+fit1 <-lm(pnodes ~ progrec*estrec,data = germany_age)
+summary(fit1)
+sample1 <-replicate(5000, {
+  boot1 <-germany_age[sample(nrow(germany_age),replace = TRUE),]
+  fit3 <-lm(pnodes ~ progrec*estrec, data=boot1)
+  coef(fit3)
+  
+})
+sample1 %>%t%>%as.data.frame() %>% summarize_all(sd)
+
+
+```
+Using the bootstrapped SEs, the p-values are the same and showed no change. The bootstrapped SEs are less than the original SEs for progrec, estrec, and the interaction regression model SEs, and are very close but still slightly less than robust SEs for progrec, estrec, and the interaction model.
+
+- **5. (40 pts)** Perform a logistic regression predicting a binary categorical variable (if you don't have one, make/get one) from at least two explanatory variables (interaction not necessary). 
+
+```{R}
+germany_age$menopause<-ifelse(germany_age$menostat=="Post",1,0)
+#log regress
+fit4<-glm(menopause~progrec+estrec+tsize,data=germany_age,family=binomial(link="logit"))
+coeftest(fit4)
+#coefficient
+exp(coef(fit4))
+#confusion matrix
+germany_age$predict <-predict(fit4,data=germany_age,type="response")
+table(predict=as.numeric(germany_age$predict>.5),truth=germany_age$menopause)%>%addmargins
+#accuracy
+(54+1494)/2394
+#sensitivity
+1494/1512
+#specifity
+54/72
+#PPV
+1494/2322
+
+#plot
+library(plotROC)
+ggplot(germany_age,aes(progrec,predict,color=menostat))+geom_line()
+#density
+logit<-predict(fit4)
+menostat <-factor(germany_age$menostat, levels = c("Pre","Post"))
+ggplot(germany_age, aes(logit,fill=as.factor(menostat)))+geom_density(alpha=0.3)+geom_vline(xintercept = 0, lty=2)
+#ROC curve and AUC
+library(pROC)
+library(plotROC)
+data <- germany_age %>% mutate(prob=predict(fit4,type="response"),
+        prediction = ifelse(prob>.5,1,0))
+class <- data %>% transmute(prob,predict,truth=menopause)
+ROC <-ggplot(class)+geom_roc(aes(d=truth,m=prob),n.cuts = 0)+geom_segment(aes(x=0,xend=1,y=0,yend=1),lty=2)
+ROC
+calc_auc(ROC)
+
+#CV
+class_diag<-function(probs,truth){
+tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth) 
+acc=sum(diag(tab))/sum(tab)
+sens=tab[2,2]/colSums(tab)[2]
+spec=tab[1,1]/colSums(tab)[1]
+ppv=tab[2,2]/rowSums(tab)[2]
+if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+
+ord<-order(probs, decreasing=TRUE)
+probs <- probs[ord]; truth <- truth[ord]
+TPR=cumsum(truth)/max(1,sum(truth)) 
+FPR=cumsum(!truth)/max(1,sum(!truth))
+dup<-c(probs[-1]>=probs[-length(probs)], FALSE) 
+TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+n <- length(TPR)
+auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+data.frame(acc,sens,spec,ppv,auc) }
+#10fold
+set.seed(1234)
+k = 10
+dat1 <- germany_age[sample(nrow(germany_age)), ]
+folds <- cut(seq(1:nrow(germany_age)), breaks = k, labels = F) 
+diags <- NULL
+for (i in 1:k) {
+train <- dat1[folds != i, ]
+test <- dat1[folds == i, ]
+truth <- test$menopause
+fit5<- glm(menopause ~ progrec+estrec+tsize, data = train, family ="binomial") 
+probs <- predict(fit5, newdata = test, type = "response")
+diags <- rbind(diags, class_diag(probs, truth)) }
+diags %>% summarize_all(mean)
+apply(diags,2,mean)
+fit6 <- lm(menopause ~ progrec+estrec+tsize, data = train, family ="binomial") 
+summary(fit6)
+```
+
+We can see by the coefficient estimates the effects the various variables (progrec, estrec, and tsize) have on menopause, the binary categorical variable. For every increase in progesterone receptors by 1 (fmol), the chance of menopause (menostat = "Post"), changes by 0.9994086. For every increase in estrogen receptors by 1 (fmol), the chance of menopause (menostat = "Post"), increases by 1.0055304. For every increase in tumor size (mm) by 1, the chance of menopause (menostat = "Post"), increases by 1.0071075. 
+
+The accuracy (proportion was classified correctly) from the model is calculated to be approximately 0.6466, sensitivity is the TPR, true positive rate, (probability of correctly predicting post-menopausal rates (menopause ="1")) and is calculated to be approximately 0.9881. Specificity is the TNR, true negative rate(- cases classified correctly), and it was calculated to be 0.75. 
+
+The precision PPV is the proportion of patients who are predicted as post-menopausal vs those who actually are, and it came out to 0.6434. For my ROC, the calculated AUC was 0.6800292, which suggests how well the model is predicting. The auc here is fairly low, meaning overall, the model is not predicting well and tsize, progrec, and estrec variables are not good predictors of menopause status. 
+
+I performed a 10 fold CV to find the accuracy to be 0.64242329, sensitivity (TPR) to be 0.99158978, specificity (TNR) to be 0.04420407, ppv (recall) to be 0.64012094, and auc to be 0.67995765. 
+
+- **6. (10 pts)** Choose one variable you want to predict (can be one you used from before; either binary or continuous) and run a LASSO regression inputting all the rest of your variables as predictors. Choose lambda to give the simplest model whose accuracy is near that of the best (i.e., `lambda.1se`). Discuss which variables are retained. Perform 10-fold CV using this model: if response in binary, compare model's out-of-sample accuracy to that of your logistic regression in part 5; if response is numeric, compare the residual standard error (at the bottom of the summary output, aka RMSE): lower is better fit!
+```{R}
+library(glmnet)
+y<-as.matrix(germany_age$tsize)
+x<-germany_age%>%dplyr::select(menopause,pnodes,progrec,estrec)%>%mutate_all(scale)%>%as.matrix
+cv<-cv.glmnet(x,y)
+lasso1<- glmnet(x,y,lambda = cv$lambda.1se) 
+coef(lasso1)
+
+set.seed(1234)
+k = 10
+dat2 <- germany_age[sample(nrow(germany_age)), ]
+folds <- cut(seq(1:nrow(germany_age)), breaks = k, labels = F)
+diags <- NULL 
+for (i in 1:k) {
+train <- dat2[folds != i, ] 
+
+test <- dat2[folds == i, ]
+fit7 <- lm(tsize ~ pnodes, data = train) 
+
+yhat <- predict(fit6, newdata = test)
+diags <- mean((test$menopause - yhat)^2) }
+
+mean(diags)
+summary(fit7)
+```
+This conducted LASSO test's goal was to predict tumor size from variables menopause, pnodes, progrec, and estrec. Only the pnodes variable had a non-zero result of 1.790349 and was retained, meaning it was the most significant predictor of tumor size. The residual standard error of 15.35 in this problem is greater than the residual standard error of 0.4652 from the 10 fold CV conducted in problem 5. The lower RMSE is a better fit, so the LASSO test showed a worse fit than the 10 fold CV from problem 5. 
+
+
+...
+
+
+
+
+

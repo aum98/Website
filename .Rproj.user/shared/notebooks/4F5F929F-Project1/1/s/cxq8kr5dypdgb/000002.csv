@@ -1,0 +1,4 @@
+"0","#dplyr functions"
+"0","    combined <- germany_age %>% group_by(age) %>% "
+"0","  summarize(count = n(),max_tumor = max(germany_age$tsize),  min_tumor = min(germany_age$tsize)) %>% filter(count > 10) %>%  arrange(desc(age)) "
+"0","combined"

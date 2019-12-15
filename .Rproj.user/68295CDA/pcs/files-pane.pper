@@ -1,0 +1,13 @@
+{
+    "path" : "~/Desktop/website1/content",
+    "sortOrder" : [
+        {
+            "ascending" : false,
+            "columnIndex" : 4
+        },
+        {
+            "ascending" : false,
+            "columnIndex" : 2
+        }
+    ]
+}
