@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>projects on Chris Turner</title>
+    <title>projects on Aum Mhapankar</title>
     <link>/tags/projects/</link>
-    <description>Recent content in projects on Chris Turner</description>
+    <description>Recent content in projects on Aum Mhapankar</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
     <lastBuildDate>Sun, 02 Oct 2016 22:55:05 -0400</lastBuildDate>
@@ -18,8 +18,8 @@
       
       <guid>/projects/</guid>
       <description>Projects Here are some projects I have been working on during my Computational Biology Course:
-  Project 1
-  Project 2
+  Project 1 (Data Wrangling and Exploratory Analysis)
+  Project 2 (Modeling, Inference, Prediction)
   </description>
     </item>
     

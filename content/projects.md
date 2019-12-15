@@ -11,6 +11,6 @@ title: Projects
 
 Here are some projects I have been working on during my Computational Biology Course:
 
-- [Project 1](/Project1/)
+- [Project 1 (Data Wrangling and Exploratory Analysis)](/Project1/)
 
-- [Project 2](/Project2/)
+- [Project 2 (Modeling, Inference, Prediction)](/Project2/)

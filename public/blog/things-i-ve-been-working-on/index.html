@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Aum Mhapankar" />
+    <meta name="description" content="Describe your website">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>Things I&#39;ve been working on</title>
+    <meta name="generator" content="Hugo 0.61.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/blog/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/blog/things-i-ve-been-working-on/">Things I&#39;ve been working on</a></strong>
+          </h3>
+        </div>
+        <div class="blog-title">
+          <h4>
+          December 15, 2019
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              <h1 id="rstudio">RStudio</h1>
+<p>Here are links to projects I have worked on that involved using RStudio to combine datasets, run biostatistical tests, and generate plots to model data and determine trends between variables.</p>
+<p><a href="/Project1">http://127.0.0.1:7240/Project1/</a></p>
+<p><a href="/Project2">http://127.0.0.1:5046/projects/</a></p>
+<p><img src="/blog/2015-07-23-r-rmarkdown_files/cancer.jpg" alt=""></p>
+<h1 id="python">Python</h1>
+<p>Some of the Python material I have worked recently on has involved basic statistical analysis of datasets such as faithful in which our input code was:</p>
+<p>import pandas as pd
+faithful=pd.read_csv(&ldquo;<a href="https://vincentarelbundock.github.io/Rdatasets/csv/datasets/faithful.csv%22">https://vincentarelbundock.github.io/Rdatasets/csv/datasets/faithful.csv&quot;</a>)</p>
+<p>type(faithful)
+faithful.head()</p>
+<p>print(&ldquo;Max eruptions: &ldquo;)
+max(faithful.eruptions)</p>
+<p>print(&ldquo;Min eruptions: &ldquo;)
+min(faithful.eruptions)</p>
+<p>print(&ldquo;Max waiting: &ldquo;)
+max(faithful.waiting)</p>
+<p>min(faithful.waiting)</p>
+<p>which outputted:</p>
+<p>pandas.core.frame.DataFrame</p>
+<p><img src="/blog/2019-12-15-things-i-ve-been-working-on_files/pic.jpg" alt=""></p>
+<p>Max eruptions:
+5.1
+Min eruptions:
+1.6
+Max waiting:
+96
+Min waiting:
+43</p>
+<p>I have also graphed data to visualize different relationships between variables, such as the eruption times and waiting times of the faithful geyser:</p>
+<p>I inputted:</p>
+<p>plt.hist(faithful[&lsquo;eruptions&rsquo;])</p>
+<p>print(&ldquo;eruptions&rdquo;)</p>
+<p>plt.show();</p>
+<p>plt.hist(faithful[&lsquo;waiting&rsquo;])</p>
+<p>print(&ldquo;waiting&rdquo;)</p>
+<p>plt.show();</p>
+<p>and python outputted:</p>
+<p><img src="/blog/2019-12-15-things-i-ve-been-working-on_files/pic3.jpg" alt=""></p>
+<p>I also worked with strings of text using findall functions to extract IP addresses.</p>
+<p>In this example, I inputted:</p>
+<p>string2=&quot;Jan 13 00:48:59: DROP service 68-&gt;67(udp) from 213.92.153.167 to 69.43.107.219, prefix: &quot;spoof iana-0/8&quot;<br>
+(in: eth0 69.43.112.233(38:f8:b7:90:45:92):68 -&gt; 217.70.100.113(00:21:87:79:9c:d9):67 UDP len:576 ttl:64)<br>
+Jan 13 12:02:48: ACCEPT service dns from 74.125.186.208 to firewall(pub-nic-dns), prefix: &quot;none&quot;<br>
+(in: eth0 74.125.186.208(00:1a:e3:52:5d:8e):36008 -&gt; 140.105.63.158(00:1a:9a:86:2e:62):53 UDP len:82 ttl:38)<br>
+Jan 13 17:44:52: DROP service 68-&gt;67(udp) from 172.45.240.237 to 217.70.177.60, prefix: &quot;spoof iana-0/8&quot;<br>
+(in: eth0 216.34.90.16(00:21:91:fe:a2:6f):68 -&gt; 69.43.85.253(00:07:e1:7c:53:db):67 UDP len:328 ttl:64)<br>
+Jan 13 17:52:08: ACCEPT service http from 213.121.184.130 to firewall(pub-nic), prefix: &quot;none&quot;<br>
+(in: eth0 213.121.184.130(00:05:2e:6a:a4:14):8504 -&gt; 140.105.63.164(00:60:11:92:ed:1b):80 TCP flags: ***<em>S</em> len:52 ttl:109)&rdquo;</p>
+<p>re.findall(r&rsquo;\d{2,3}.\d{2,3}.\d{2,3}.\d{2,3}',string2)</p>
+<p>And Python outputted the relevant IP addresses from the text:</p>
+<p>[&lsquo;213.92.153.167&rsquo;,
+&lsquo;69.43.107.219&rsquo;,
+&lsquo;69.43.112.233&rsquo;,
+&lsquo;217.70.100.113&rsquo;,
+&lsquo;74.125.186.208&rsquo;,
+&lsquo;74.125.186.208&rsquo;,
+&lsquo;140.105.63.158&rsquo;,
+&lsquo;172.45.240.237&rsquo;,
+&lsquo;217.70.177.60&rsquo;,
+&lsquo;216.34.90.16&rsquo;,
+&lsquo;69.43.85.253&rsquo;,
+&lsquo;213.121.184.130&rsquo;,
+&lsquo;213.121.184.130&rsquo;,
+&lsquo;140.105.63.164&rsquo;]</p>
+<p>These are just a few examples of the useful Python coding I did in Computational Biology to conduct statistical analysis, graph and model data, and extract pertinent information from data.</p>
+
+              <hr>
+              <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div>
+            </div>
+          </div>
+          <hr>
+        <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+      </div>
+      
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>
